@@ -11,19 +11,26 @@ Creation Date:  ~APR/14/2020
 Purpose:        To move the robot in a coordinated and modular manner
 */
 
+//A class which carries all relevant information used for positional tracking for Subsystem 1
 class robot_ {
-  public:
+  public: //Able to be accessed by any function or class
     struct drive {
+      //The type of drive represented by a integer ranging from 0-255,
+      // these types and their number conversions are represented in the enumeration "drive_type"
       uint8_t type;
+      
       //In inches..
-      double wh_size;
-      //The most commmon design for tracking wheels requires the 2.75 inch Omni wheel, so 2.75 is the default
+      double wh_size; //Driven wheel size, as to determine speed and distance
+      double x_size;  //Size X of the robot drive, as to be used for platforms
+      double y_size;  //Size Y of the robot drive, as to be used for platforms
+      //Both X and Y are used in tandum to determine the size of the robot as to not drive off of a platform
+      
+      //Tracking wheel size, used to determine measured speed and distance
+      //The most commmon design for tracking wheels uses the 2.75 inch Omni wheel, so 2.75 is the default
       double tr_wh_size = 2.75;
-      //In (Driven wheel) RPM..
+      
+      //In (Driven wheel) RPM, used to determine speed
       double speed;
-      //In inches..
-      double x_size;
-      double y_size;
     } drive;
     
     enum drive_type {
@@ -34,31 +41,34 @@ class robot_ {
       dragon_drive = 5,
       swerve = 6
     };
-    
-    //Constructor
+
+    //Constructor: Passes given variables to the class members
     robot_(robot_::drive_type drive_, double wh_size, double tr_wh_size, double speed, double x_size, double y_size) {
-      robot_::drive.type = drive_;
+      robot_::drive.type = drive_; //Passes the drive type given at the "construction" (or initialization) to the class member "drive.type"
       robot_::drive.wh_size = wh_size;
       robot_::drive.tr_wh_size = tr_wh_size;
       robot_::drive.speed = speed;
       robot_::drive.x_size = x_size;
       robot_::drive.y_size = y_size;
-    }
+    }//Example: robot robot_(robot_::drive_type::tank_drive, 4.0, 4.0, 200, X, Y);
+     //This creates a "robot_" class instance with the name "robot" with 4 inch 200 RPM driven wheels, 4 inch tracking wheels, an X dimension of X and a Y dimension of Y
     robot_(robot_::drive_type drive_, double wh_size, double speed, double x_size, double y_size) {
       robot_::drive.type = drive_;
       robot_::drive.wh_size = wh_size;
       robot_::drive.speed = speed;
       robot_::drive.x_size = x_size;
       robot_::drive.y_size = y_size;
-    }
-    //Destructor
-    ~robot_() {};
+    }//Example: robot robot_(robot_::drive_type::tank_drive, 4.0, 200, X, Y)
+    //This creates a "robot_" class instance with the name "robot" with 4 inch 200 RPM driven wheels, 2.75 inch tracking wheels, an X dimension of X and a Y dimension of Y
+  
+    //Destructor: Destroys the class instance invoked
+    ~robot_() {}; //Example: "~robot();" would deconstruct a "robot_" class instance of "robot"
 };
 
 class field {
-  friend class platform;
-  protected:
-    //Pointer to the robot class instance passed at field class construction
+  friend class platform; //Allows instances of the "platform" class to access both protected and private members and fucntions
+  protected: //Avalible to friend classes and child classes
+    //Pointer to a robot class instance used for various calculations
     robot_ *robot_p;
 
     //Positional data
@@ -72,42 +82,43 @@ class field {
 
     //Eular's number, which is used in the Sigmoid curve motion profiling seen throughout the library
     const double eular = 2.718281828459045235;
-  public:
-    //Units used to determine in what increments the robot can move
+  public: //Able to be accessed by any function or class
+    //Units of movement
     enum units {
       tile = 1000,
       foot = 100,
       inches = 10,
-      raw = 1
+      raw = 1     //Raw encoder Units
     };
     //Constructor
-    //*robot_1 is a "robot" class pointer used to refer to the physical aspects of the robot
+    //*robot_1 is a "robot" class pointer used to refer to an instance of the class "robot_"
     //*robot_p is always initialized in order to avoid a Segmentation fault, which can result from accessing a uninitialized pointer
     field(robot_ *robot_1, int32_t x_pos, int32_t y_pos, double z_pos, double angle) {
-      //robot_p is assigned the value of robot_1 to allow access to the passed robot instance to all members of the "field" class
+      //robot_p is assigned the value of robot_1 to allow access to the passed "robot_" instance to all functions and members of the "field" class
       robot_p = robot_1;
-      pos.x_pos = x_pos; 
-      pos.y_pos = y_pos; 
+      pos.x_pos = x_pos;
+      pos.y_pos = y_pos;
       pos.z_pos = z_pos;
       pos.angle = angle;
     };
     //Destructor
     ~field() {};
     
-    //Used to print the position of the robot in an (x,y,z,angle) manner
+    //Used to print the position of the robot in an (x,y,z,angle) format
     void display    (); 
-    //Used to set the position of the robot in an (x,y,z,angle) manner
+    //Used to set the position of the robot in an (x,y,z,angle) format (Testing Only)
     void set_pos    (field::units units, int32_t x_pos, int32_t y_pos, double z_pos);
 
-    //Used to rotate the robot to a desired angle at a desired power
-    void rotate     (uint8_t power, double rotation); 
+    //Used to rotate the robot to a desired angle at a desired power/speed
+    void rotate     (uint8_t power, double rotation, bool relative, double margin); 
+  
+    //WIP
     //To rotate the robot in an arc to a given position at a given radius at a given power
     void arc        (uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, double radius, double distance_center);
 
     //To move in a straight line between the current position and a given point at a given speed
-    //The "bool button" is used to enable barrier sensing, which would stop the robot should a obstacle was encountered
-    void direct     (uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button);
-    void direct     (uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, double angle, double angle_margin);
+    //The "bool button", when true, is used to enable obsticle sensing, which would stop the robot should a obstacle be encountered
+    void direct     (uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin);
     void direct_time(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, uint16_t time);
 };
 
@@ -116,8 +127,10 @@ class platform {
     struct rel_pos {
       int32_t x_pos;
       int32_t y_pos;
-      //Z axis is for use in high hangs or other platform based mechanics
+      
+      //the Z axis is used for high hangs or other platform based mechanics
       double z_pos;
+      
       double angle;
     } rel_pos;
     int32_t x_limit;
@@ -136,19 +149,23 @@ class platform {
     ~platform() {};
     
     void display_();
-    void tare();
+    void set_pos();
 };
 
+//A function that prints out all postitional data in a (X,Y,Z,angle) format
 void field::display() {
   std::cout << pos.x_pos << ": " << pos.y_pos << ": " << pos.z_pos << ": " << pos.angle << "\n";
 }
 
+//"set_pos" is for no other use other than testing movements or other features
 void field::set_pos(field::units units, int32_t x_pos, int32_t y_pos, double z_pos) {
   field::pos.x_pos = x_pos;
   field::pos.y_pos = y_pos;
   field::pos.z_pos = z_pos;
 }
 
+//A "half-successful" attempt at making the robot (2020-2021) move in an arc, while the robot did move in an arc, the arc was not the specified
+// size, relegating this function to "half-successful", further study is needed before reconstruction or repair of this fucntion
 void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, double radius, double distance_center) {
   //distance_center : To represent distance between 
 
@@ -172,10 +189,14 @@ void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos,
   //X_value : Angle/1.5708
   //Y_value : Angle * (Angle/1.5708)
 
+  //Think Square:
+  //162.564853453/247.3878551
+  //dsf = 0.65712544129
+
   //In inches
-  double inner_cir = 2*M_PI*radius; //3.14
+  double inner_cir = 2*M_PI*radius;
   //Add 13.5" (for the opposing side of the drive) (Left wheel axis to Right wheel axis)
-  double outer_cir = 2*M_PI*(radius + 13.5); //87.96
+  double outer_cir = 2*M_PI*(radius + 13.5);
 
   //Differential steer factor
   double dsf = (inner_cir/outer_cir);
@@ -185,24 +206,29 @@ void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos,
 
   //                                                                  \/ robot::drive.wh_size
   //Add offset (If needed)
-  double y_enc_conv = (ynd_encoder.rotation(vex::rotationUnits::deg) / robot_p->drive.wh_size) * 360;
+  double y_enc_conv = (ynd_encoder.rotation(vex::rotationUnits::deg) / 360) * robot_p->drive.tr_wh_size;
 
   double radian = atan2(x_pos, y_pos);
 
   //                                                                                          \/ robot::drive.tr_wh_size
   //To rotate to angle appropriate for turning the correct arc
-  double half_seg = ((sqrt(pow(x_pos - pos.x_pos, 2.0) + pow(y_pos - pos.y_pos, 2.0))/2)/360) * robot_p->drive.tr_wh_size;
+  double half_seg = ((sqrt(pow(x_pos - pos.x_pos, 2.0) + pow(y_pos - pos.y_pos, 2.0))/360) * robot_p->drive.wh_size)/2;
   double small = radius - distance_center;
-  double start_angle = 1.5708 - atan(small/half_seg);
+  double start_angle = (1.5708 - atan(small/half_seg)) * (180/M_PI);
 
   if(radian >= 0 && radian <= 3.1415) {
     double angle = pos.angle + ((radian/180)*M_PI);
-    field::rotate(power, angle);
-    while(y_enc_conv < outer_cir) {
-      leftFront.spin(vex::directionType::fwd,  D_pow * ((200/(1+(pow(eular,-0.00652 * y_enc_conv)))-100)/100)/1000, vex::velocityUnits::pct);
-      leftBack.spin(vex::directionType::fwd,   D_pow * ((200/(1+(pow(eular,-0.00652 * y_enc_conv)))-100)/100)/1000, vex::velocityUnits::pct);
-      rightFront.spin(vex::directionType::fwd, N_pow * ((200/(1+(pow(eular,-0.00652 * y_enc_conv)))-100)/100)/1000, vex::velocityUnits::pct);
-      rightBack.spin(vex::directionType::fwd,  N_pow * ((200/(1+(pow(eular,-0.00652 * y_enc_conv)))-100)/100)/1000, vex::velocityUnits::pct);
+    field::rotate(25, start_angle, false, 1);
+    std::cout << D_pow * ((200/(1+(pow(eular,-0.00652 * (outer_cir - y_enc_conv))))-100)/100) << "\n";
+    std::cout << outer_cir << ":" << y_enc_conv << ":" << (outer_cir - y_enc_conv) << "\n";
+    while(outer_cir > y_enc_conv) {
+      y_enc_conv = (ynd_encoder.rotation(vex::rotationUnits::deg) / 360) * robot_p->drive.tr_wh_size;
+      std::cout << y_enc_conv << ":" << outer_cir << ":" << ynd_encoder.rotation(vex::rotationUnits::deg) << "\n";
+      leftFront.spin(vex::directionType::fwd,  D_pow /* * ((200/(1+(pow(eular,-0.00652 * (outer_cir - y_enc_conv))))-100)/100)*/, vex::velocityUnits::pct);
+      leftBack.spin(vex::directionType::fwd,   D_pow /* * ((200/(1+(pow(eular,-0.00652 * (outer_cir - y_enc_conv))))-100)/100)*/, vex::velocityUnits::pct);
+      rightFront.spin(vex::directionType::fwd, N_pow /* * ((200/(1+(pow(eular,-0.00652 * (outer_cir - y_enc_conv))))-100)/100)*/, vex::velocityUnits::pct);
+      rightBack.spin(vex::directionType::fwd,  N_pow /* * ((200/(1+(pow(eular,-0.00652 * (outer_cir - y_enc_conv))))-100)/100)*/, vex::velocityUnits::pct);
+      vex::task::sleep(10);
     };
   } else if(radian < 0 && radian >= -1.5708) {
     while(y_enc_conv < inner_cir) {
@@ -222,281 +248,111 @@ void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos,
   rightBack.stop(vex::brakeType::coast);
 }
 
-void field::rotate(uint8_t power, double rotation) {
-  double angle_mes = imu.yaw();
-  //const double eular = 2.718281828459045235;
-  //double prof_power = ((200/(1+(pow(eular,-0.5 * rotation)))-100)/100) * angle_mes;
+void field::rotate(uint8_t power, double rotation, bool relative, double margin) {
+  double angle_mes = imu.heading();
+  double angle_mes_2 = 0;
 
   leftFront.stop(vex::brakeType::hold);
   leftBack.stop(vex::brakeType::hold);
   rightFront.stop(vex::brakeType::hold);
   rightBack.stop(vex::brakeType::hold);
 
-  if(rotation > 0) {
-    while(angle_mes < rotation) {
-      std::cout << imu.yaw() << "\n";
-      angle_mes = imu.yaw();
-      leftFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-      leftBack.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-      rightFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-      rightBack.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-      vex::task::sleep(10);
-    }
-  }
-  else if(rotation > 0) {
-    while(angle_mes < rotation) {
-      angle_mes = imu.yaw();
-      std::cout << imu.yaw() << "\n";
-      leftFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-      leftBack.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-      rightFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-      rightBack.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-      vex::task::sleep(10);
-    }
-  }
-  else;
+  if(rotation < 0) {
+    if(relative) {
+      double position = 0;
+      while(position < rotation) {
+        std::cout << position << "\n";
+        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
+          position += angle_mes_2;
+        } else;
 
-  leftFront.stop();
-  leftBack.stop();
-  rightFront.stop();
-  rightBack.stop();
+        leftFront.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
+        leftBack.spin(vex::directionType::fwd,   power, vex::velocityUnits::pct);
+        rightFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
+        rightBack.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
+
+        angle_mes = imu.heading();
+        vex::task::sleep(20);
+        angle_mes_2 = angle_mes - imu.heading();
+      }
+    } else {
+      while(field::pos.angle < rotation) {
+        std::cout << field::pos.angle << "\n";
+        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
+          field::pos.angle += angle_mes_2;
+        } else;
+
+        leftFront.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
+        leftBack.spin(vex::directionType::fwd,   power, vex::velocityUnits::pct);
+        rightFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
+        rightBack.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
+
+        angle_mes = imu.heading();
+        vex::task::sleep(20);
+        angle_mes_2 = angle_mes - imu.heading();
+      }
+    }
+  } else if(rotation > 0) {
+    if(relative) {
+      double position = 0;
+      while(position < rotation) {
+        std::cout << position << "\n";
+        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
+          position += angle_mes_2;
+        } else;
+
+        leftFront.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
+        leftBack.spin(vex::directionType::fwd,   -power, vex::velocityUnits::pct);
+        rightFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
+        rightBack.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
+
+        angle_mes = imu.heading();
+        vex::task::sleep(20);
+        angle_mes_2 = angle_mes - imu.heading();
+      }
+      std::cout << "Rotation of ~" << rotation << " degrees completed : True measure: " << position << "\n";
+    } else {
+      while(field::pos.angle < rotation) {
+        std::cout << field::pos.angle << "\n";
+        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
+          field::pos.angle += angle_mes_2;
+        } else;
+
+        leftFront.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
+        leftBack.spin(vex::directionType::fwd,   -power, vex::velocityUnits::pct);
+        rightFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
+        rightBack.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
+
+        angle_mes = imu.heading();
+        vex::task::sleep(20);
+        angle_mes_2 = angle_mes - imu.heading();
+      }
+      std::cout << "Rotation to ~" << rotation << " (degrees) completed : True measure: " << angle_mes_2 << "\n";
+    }
+  } else;
+
+  leftFront.stop(vex::brakeType::brake);
+  leftBack.stop(vex::brakeType::brake);
+  rightFront.stop(vex::brakeType::brake);
+  rightBack.stop(vex::brakeType::brake);
 
   y_encoder.resetRotation();
   x_encoder.resetRotation();
-
-  leftFront.stop(vex::brakeType::coast);
-  leftBack.stop(vex::brakeType::coast);
-  rightFront.stop(vex::brakeType::coast);
-  rightBack.stop(vex::brakeType::coast);
 }
 
-void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, double angle, double angle_margin) {
-  double d_x_pos = (x_pos-pos.x_pos);
-  double d_y_pos = (y_pos-pos.y_pos);
-  
-  double slope2;
-  double slope1;
-
-  double slope1_prof;
-  double slope2_prof;
-
-  double d_angle;
-
-  long double radian = atan2(y_pos, x_pos);
-  
-  const double eular = 2.718281828459045235;
-
-  long double distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-
-  if(button) {
-    while(fabs(distancew) > error_margin && !front_limit.pressing()) {
-      pos.y_pos += (ynd_encoder.position(vex::rotationUnits::deg));
-      pos.x_pos += (x_encoder.position(vex::rotationUnits::deg));
-      
-      ynd_encoder.resetRotation();
-      x_encoder.resetRotation();
-
-      d_x_pos = (x_pos-pos.x_pos);
-      d_y_pos = (y_pos-pos.y_pos);
-
-      radian = atan2(d_y_pos, d_x_pos);
-
-      if(radian >= 0 && radian <= 1.570796) {
-        slope1 = power * (-100 + ((radian/0.785398) * 100));
-        slope2 = power * 100;
-      }
-      else if(radian > 1.570796 && radian <= 3.141592)   {
-        slope1 = power * 100;
-        slope2 = power * (100 - (((radian-1.570796)/0.785398) * 100));
-      }
-      else if(radian < 0 && radian >= -1.570796) {
-        slope1 = power * -100;
-        slope2 = power * (100 - ((fabs(radian)/0.785398) * 100));
-      }
-      else if(radian < -1.570796 && radian >= -3.141592) {
-        slope1 = power * (-100 + ((fabs(radian)-1.570796)/0.785398) * 100);
-        slope2 = power * -100;
-      }
-      else;
-
-      d_angle = imu.heading() - angle;
-
-      distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-      slope1_prof = (slope1 * (200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)/100;
-      slope2_prof = (slope2 * (200/(1+(pow(eular,-0.00652* distancew)))-100)/100)/100;
-
-      leftFront. spin(vex::directionType::fwd, ((slope1_prof/100) * 12000) - (40/(1+(pow(eular,-0.07 * distancew)))-20), vex::voltageUnits::mV);
-      leftBack.  spin(vex::directionType::fwd, ((slope2_prof/100) * 12000) - (40/(1+(pow(eular,-0.07 * distancew)))-20), vex::voltageUnits::mV);
-      rightFront.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000) - (40/(1+(pow(eular,-0.07 * distancew)))-20), vex::voltageUnits::mV);
-      rightBack. spin(vex::directionType::fwd, ((slope1_prof/100) * 12000) - (40/(1+(pow(eular,-0.07 * distancew)))-20), vex::voltageUnits::mV);
-      vex::task::sleep(10);
-    }
-  }
-  else {
-    while(fabs(distancew) > error_margin) {
-      pos.y_pos += (ynd_encoder.position(vex::rotationUnits::deg));
-      pos.x_pos += (x_encoder.position(vex::rotationUnits::deg));
-      
-      ynd_encoder.resetRotation();
-      x_encoder.resetRotation();
-
-      d_x_pos = (x_pos-pos.x_pos);
-      d_y_pos = (y_pos-pos.y_pos);
-
-      radian = atan2(d_y_pos, d_x_pos);
-
-      if(radian >= 0 && radian <= 1.570796) {
-        slope1 = power * (-100 + ((radian/0.785398) * 100));
-        slope2 = power * 100;
-      }
-      else if(radian > 1.570796 && radian <= 3.141592)   {
-        slope1 = power * 100;
-        slope2 = power * (100 - (((radian-1.570796)/0.785398) * 100));
-      }
-      else if(radian < 0 && radian >= -1.570796) {
-        slope1 = power * -100;
-        slope2 = power * (100 - ((fabs(radian)/0.785398) * 100));
-      }
-      else if(radian < -1.570796 && radian >= -3.141592) {
-        slope1 = power * (-100 + ((fabs(radian)-1.570796)/0.785398) * 100);
-        slope2 = power * -100;
-      }
-      else;
-
-      distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-      slope1_prof = (slope1 * (200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)/100;
-      slope2_prof = (slope2 * (200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)/100;
-
-      leftFront.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      leftBack.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightFront.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightBack.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      vex::task::sleep(10);
-    }
-  }
-  ynd_encoder.resetRotation();
-  x_encoder.resetRotation();
-  leftFront.stop();
-  leftBack.stop();
-  rightFront.stop();
-  rightBack.stop();
-  return;
+void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin) {
+//Under Re-Construction: Several aspects of this fucntion were over-engineered (in that features could be created with much simpler means)
+  //To Add: Drive dependant movement options
+          //Simpler obsticle detection
+          //Condensed pathing (or manuvering to the desired target)
 }
 
 void field::direct_time(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, uint16_t time) {
-  leftFront.spin(vex::directionType::fwd, 1, vex::voltageUnits::mV);
-  leftBack.spin(vex::directionType::fwd, 1, vex::voltageUnits::mV);
-  rightFront.spin(vex::directionType::fwd, 1, vex::voltageUnits::mV);
-  rightBack.spin(vex::directionType::fwd, 1, vex::voltageUnits::mV);
-  vex::task::sleep(50);
-
-  double d_x_pos = (x_pos-pos.x_pos);
-  double d_y_pos = (y_pos-pos.y_pos);
-  
-  double slope2;
-  double slope1;
-
-  double slope1_prof;
-  double slope2_prof;
-
-  long double radian = atan2(d_y_pos, d_x_pos);
-  
-  const double eular = 2.718281828459045235;
-
-  long double distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-
-  vex::timer time_;
-  if(button) {
-    while(fabs(distancew) > error_margin && !front_limit.pressing() && time_.time() < time) {
-      pos.y_pos += (ynd_encoder.position(vex::rotationUnits::deg));
-      pos.x_pos += (x_encoder.position(vex::rotationUnits::deg));
-      
-      ynd_encoder.resetRotation();
-      x_encoder.resetRotation();
-
-      d_x_pos = (x_pos-pos.x_pos);
-      d_y_pos = (y_pos-pos.y_pos);
-
-      radian = atan2(d_y_pos, d_x_pos);
-
-      if(radian >= 0 && radian <= 1.570796) {
-        slope1 = power * (-100 + ((radian/0.785398) * 100));
-        slope2 = power * 100;
-      }
-      else if(radian > 1.570796 && radian <= 3.141592)   {
-        slope1 = power * 100;
-        slope2 = power * (100 - (((radian-1.570796)/0.785398) * 100));
-      }
-      else if(radian < 0 && radian >= -1.570796) {
-        slope1 = power * -100;
-        slope2 = power * (100 - ((fabs(radian)/0.785398) * 100));
-      }
-      else if(radian < -1.570796 && radian >= -3.141592) {
-        slope1 = power * (-100 + ((fabs(radian)-1.570796)/0.785398) * 100);
-        slope2 = power * -100;
-      }
-      else;
-
-      distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-      slope1_prof = (slope1 * ((power*2)/(1+(pow(eular,-0.00652 * distancew)))-power)/100)/100;
-      slope2_prof = (slope2 * ((power*2)/(1+(pow(eular,-0.00652 * distancew)))-power)/100)/100;
-
-      leftFront.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      leftBack.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightFront.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightBack.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      vex::task::sleep(10);
-    }
-  }
-  else {
-    while(fabs(distancew) > error_margin && time_.time() < time) {
-      pos.y_pos += (ynd_encoder.position(vex::rotationUnits::deg));
-      pos.x_pos += (x_encoder.position(vex::rotationUnits::deg));
-      
-      ynd_encoder.resetRotation();
-      x_encoder.resetRotation();
-
-      d_x_pos = (x_pos-pos.x_pos);
-      d_y_pos = (y_pos-pos.y_pos);
-
-      radian = atan2(d_y_pos, d_x_pos);
-
-      if(radian >= 0 && radian <= 1.570796) {
-        slope1 = power * (-100 + ((radian/0.785398) * 100));
-        slope2 = power * 100;
-      }
-      else if(radian > 1.5707963 && radian <= 3.141592)   {
-        slope1 = power * 100;
-        slope2 = power * (100 - (((radian-1.5707963)/0.785398) * 100));
-      }
-      else if(radian < 0 && radian >= -1.570796) {
-        slope1 = power * -100;
-        slope2 = power * (100 - ((fabs(radian)/0.785398) * 100));
-      }
-      else if(radian < -1.570796 && radian >= -3.141592) {
-        slope1 = power * (-100 + ((fabs(radian)-1.570796)/0.785398) * 100);
-        slope2 = power * -100;
-      }
-      else;
-
-      distancew = (int)sqrt(pow((x_pos - pos.x_pos),2.00) + pow((y_pos - pos.y_pos),2.00));
-      slope1_prof = (slope1 * ((power*2)/(1+(pow(eular,-0.00652 * distancew)))-power)/100)/100;
-      slope2_prof = (slope2 * ((power*2)/(1+(pow(eular,-0.00652 * distancew)))-power)/100)/100;
-
-      leftFront.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      leftBack.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightFront.spin(vex::directionType::fwd, ((slope2_prof/100) * 12000), vex::voltageUnits::mV);
-      rightBack.spin(vex::directionType::fwd, ((slope1_prof/100) * 12000), vex::voltageUnits::mV);
-      vex::task::sleep(10);
-    }
-  }
-  ynd_encoder.resetRotation();
-  x_encoder.resetRotation();
-  leftFront.stop();
-  leftBack.stop();
-  rightFront.stop();
-  rightBack.stop();
-  return;
+//Under Re-Construction: Several aspects of this fucntion were over-engineered (in that features could be created with much simpler means)
+  //To Add: Drive dependant movement options
+          //Simpler obsticle detection
+          //Condensed pathing (or manuvering to the desired target)
+          //Simpler timer usage
 }
 
 #endif
