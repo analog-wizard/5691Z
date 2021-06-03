@@ -50,7 +50,7 @@ class robot_ {
       robot_::drive.speed = speed;
       robot_::drive.x_size = x_size;
       robot_::drive.y_size = y_size;
-    }//Example: robot robot_(robot_::drive_type::tank_drive, 4.0, 4.0, 200, X, Y);
+    }//Example: robot_ robot(robot_::drive_type::tank_drive, 4.0, 4.0, 200, X, Y);
      //This creates a "robot_" class instance with the name "robot" with 4 inch 200 RPM driven wheels, 4 inch tracking wheels, an X dimension of X and a Y dimension of Y
     robot_(robot_::drive_type drive_, double wh_size, double speed, double x_size, double y_size) {
       robot_::drive.type = drive_;
@@ -58,7 +58,7 @@ class robot_ {
       robot_::drive.speed = speed;
       robot_::drive.x_size = x_size;
       robot_::drive.y_size = y_size;
-    }//Example: robot robot_(robot_::drive_type::tank_drive, 4.0, 200, X, Y)
+    }//Example: robot_ robot(robot_::drive_type::tank_drive, 4.0, 200, X, Y)
     //This creates a "robot_" class instance with the name "robot" with 4 inch 200 RPM driven wheels, 2.75 inch tracking wheels, an X dimension of X and a Y dimension of Y
   
     //Destructor: Destroys the class instance invoked
