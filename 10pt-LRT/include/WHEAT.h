@@ -81,7 +81,7 @@ class field {
     } pos;
 
     //Eular's number, which is used in the Sigmoid curve motion profiling seen throughout the library
-    const double eular = 2.718281828459045235;
+    const double eular = 718281828459045235;
   public: //Able to be accessed by any function or class
     //Units of movement
     enum units {
@@ -250,95 +250,9 @@ void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos,
 
 //Relative and non-Relative movements provide abundant opportunity for confusion, as such, all angle based movements will be absolute
 void field::rotate(uint8_t power, double rotation, double margin) {
-  double angle_mes = imu.heading();
-  double angle_mes_2 = 0;
-
-  leftFront.stop(vex::brakeType::hold);
-  leftBack.stop(vex::brakeType::hold);
-  rightFront.stop(vex::brakeType::hold);
-  rightBack.stop(vex::brakeType::hold);
-
-  if(rotation < 0) {
-    if(relative) {
-      double position = 0;
-      while(position < rotation) {
-        std::cout << position << "\n";
-        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
-          position += angle_mes_2;
-        } else;
-
-        leftFront.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
-        leftBack.spin(vex::directionType::fwd,   power, vex::velocityUnits::pct);
-        rightFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-        rightBack.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
-
-        angle_mes = imu.heading();
-        vex::task::sleep(20);
-        angle_mes_2 = angle_mes - imu.heading();
-      }
-    } else {
-      while(field::pos.angle < rotation) {
-        std::cout << field::pos.angle << "\n";
-        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
-          field::pos.angle += angle_mes_2;
-        } else;
-
-        leftFront.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
-        leftBack.spin(vex::directionType::fwd,   power, vex::velocityUnits::pct);
-        rightFront.spin(vex::directionType::fwd, -power, vex::velocityUnits::pct);
-        rightBack.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
-
-        angle_mes = imu.heading();
-        vex::task::sleep(20);
-        angle_mes_2 = angle_mes - imu.heading();
-      }
-    }
-  } else if(rotation > 0) {
-    if(relative) {
-      double position = 0;
-      while(position < rotation) {
-        std::cout << position << "\n";
-        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
-          position += angle_mes_2;
-        } else;
-
-        leftFront.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
-        leftBack.spin(vex::directionType::fwd,   -power, vex::velocityUnits::pct);
-        rightFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-        rightBack.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
-
-        angle_mes = imu.heading();
-        vex::task::sleep(20);
-        angle_mes_2 = angle_mes - imu.heading();
-      }
-      std::cout << "Rotation of ~" << rotation << " degrees completed : True measure: " << position << "\n";
-    } else {
-      while(field::pos.angle < rotation) {
-        std::cout << field::pos.angle << "\n";
-        if(angle_mes_2 < 10 && angle_mes_2 > -10) {
-          field::pos.angle += angle_mes_2;
-        } else;
-
-        leftFront.spin(vex::directionType::fwd,  -power, vex::velocityUnits::pct);
-        leftBack.spin(vex::directionType::fwd,   -power, vex::velocityUnits::pct);
-        rightFront.spin(vex::directionType::fwd, power, vex::velocityUnits::pct);
-        rightBack.spin(vex::directionType::fwd,  power, vex::velocityUnits::pct);
-
-        angle_mes = imu.heading();
-        vex::task::sleep(20);
-        angle_mes_2 = angle_mes - imu.heading();
-      }
-      std::cout << "Rotation to ~" << rotation << " (degrees) completed : True measure: " << angle_mes_2 << "\n";
-    }
-  } else;
-
-  leftFront.stop(vex::brakeType::brake);
-  leftBack.stop(vex::brakeType::brake);
-  rightFront.stop(vex::brakeType::brake);
-  rightBack.stop(vex::brakeType::brake);
-
-  y_encoder.resetRotation();
-  x_encoder.resetRotation();
+//Under Re-Construction:
+  //To Add: Improved absolute rotation
+          //Profiled Turning (Subject to replacement with PID)
 }
 
 void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button) {
@@ -346,19 +260,36 @@ void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_p
   //To Add: Drive dependant movement options
           //Simpler obsticle detection
           //Condensed pathing (or manuvering to the desired target)
-  //Angle To Point
+
+  //Delta positions (difference between desired point and current point)
   double d_xpos = x_pos - pos.xpos;
   double d_ypos = y_pos - pos.ypos;
+  
+  //Angle To Point
   double ATP = atan2(d_ypos, d_xpos) - ((pos.angle * M_PI)/180);
   double distance = sqrt(pow(pos.xpos-x_pos,2.0) + pow(pos.ypos-y_pos,2.0));
+  
+  //Angle calculated from the encoders
+  double enc_angle = //to add
+  
   field::rotate(power, ATP, error_margin);
   if(robot_p->drive.type == robot_::drive_type::tank_drive) {
     while(fabs(distance) > error_margin) {
       distance = sqrt(pow(pos.xpos-x_pos,2.0) + pow(pos.ypos-y_pos,2.0));
-      
+      //S-Curve profile needs to be tuned as well as (given the neutral zone added in the 2021-2022 season) a new profile to correct angle
+      leftBack.spin(vex::directionType::fwd,   ((200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)*120) /*- add profile for angle*/ , vex::velocityUnits::pct);
+      leftFront.spin(vex::directionType::fwd,  ((200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)*120) /*-*/ , vex::velocityUnits::pct);
+      rightBack.spin(vex::directionType::fwd,  ((200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)*120) /*-*/ , vex::velocityUnits::pct);
+      rightFront.spin(vex::directionType::fwd, ((200/(1+(pow(eular,-0.00652 * distancew)))-100)/100)*120) /*-*/ , vex::velocityUnits::pct);
+      //Considering implementing a self-tuning pid
+        //Or if not, some method of control which takes into account motor data, such as temperature, current max(es) and voltage max(es)
       //if(button && button_physical) {return;} //If the button being pressed and the button is enabled, then exit the function.
     }
-  } else; //"else" planned for later
+  } else; //"else" planned for later (different drive types)
+  leftBack.stop(vex::brakeType::coast);
+  leftFront.stop(vex::brakeType::coast);
+  rightBack.stop(vex::brakeType::coast);
+  rightFront.stop(vex::brakeType::coast);
 }
 
 void field::direct_time(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, uint16_t time) {
