@@ -248,7 +248,8 @@ void field::arc(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos,
   rightBack.stop(vex::brakeType::coast);
 }
 
-void field::rotate(uint8_t power, double rotation, bool relative, double margin) {
+//Relative and non-Relative movements provide abundant opportunity for confusion, as such, all angle based movements will be absolute
+void field::rotate(uint8_t power, double rotation, double margin) {
   double angle_mes = imu.heading();
   double angle_mes_2 = 0;
 
@@ -340,11 +341,24 @@ void field::rotate(uint8_t power, double rotation, bool relative, double margin)
   x_encoder.resetRotation();
 }
 
-void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin) {
+void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button) {
 //Under Re-Construction: Several aspects of this fucntion were over-engineered (in that features could be created with much simpler means)
   //To Add: Drive dependant movement options
           //Simpler obsticle detection
           //Condensed pathing (or manuvering to the desired target)
+  //Angle To Point
+  double d_xpos = x_pos - pos.xpos;
+  double d_ypos = y_pos - pos.ypos;
+  double ATP = atan2(d_ypos, d_xpos) - ((pos.angle * M_PI)/180);
+  double distance = sqrt(pow(pos.xpos-x_pos,2.0) + pow(pos.ypos-y_pos,2.0));
+  field::rotate(power, ATP, error_margin);
+  if(robot_p->drive.type == robot_::drive_type::tank_drive) {
+    while(fabs(distance) > error_margin) {
+      distance = sqrt(pow(pos.xpos-x_pos,2.0) + pow(pos.ypos-y_pos,2.0));
+      
+      //if(button && button_physical) {return;} //If the button being pressed and the button is enabled, then exit the function.
+    }
+  } else; //"else" planned for later
 }
 
 void field::direct_time(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, bool button, uint16_t time) {
