@@ -66,13 +66,14 @@ void autonMeasure() {
 }
 
 void lift_control() {
+    //Current Control layout subject to change at discresion of the driver
     //To do: Add motion profiling as to prevent ware/damage to the dr4b due to sudden stops due to imposed/physical limits
     //                                                                              Example Higher limit: 5000
     if(controller_.ButtonR1.pressing() && (dr4b.rotation(vex::rotationUnits::deg) < 5000) {
         dr4b.spin(vex::directionType::fwd, 100, vex::velocityUnits::pct);
         //                                                                                  Example Lower limit: 0
     } else if (controller_.ButtonR2.pressing() && (dr4b.rotation(vex::rotationUnits::deg) > 0)) {
-        dr4b.spin(vex::directionType::fwd, 100, vex::velocityUnits::pct);
+        dr4b.spin(vex::directionType::fwd, -100, vex::velocityUnits::pct);
     }
 }
 
