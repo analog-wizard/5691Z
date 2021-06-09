@@ -11,6 +11,9 @@ vex::motor rightFront = vex::motor(vex::PORT2, vex::gearSetting::ratio18_1, true
 vex::motor rightBack = vex::motor(vex::PORT5, vex::gearSetting::ratio18_1, true);
 //The only agreed upon aspect (currently) is a Double Reverse 4 Bar (DR4B)
 vex::motor dr4b = vex::motor(vex::PORT6, vex::gearSetting::ratio36_1, false);
+vex::motor four_bar = vex::motor(vex::PORT10, vex::gearSetting::ratio18_1, false);
+vex::motor mogo_lift = vex::motor(vex::PORT8, vex::gearSetting::ratio36_1, false);
+vex::motor RR_mech = vex::motor(vex::PORT11, vex::gearSetting::ratio18_1, false);
 
 //An 8 long array used to store port numbers for installation checks
 // (To see if the motor is in the port specified)
