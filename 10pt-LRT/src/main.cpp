@@ -49,6 +49,13 @@ void pre_auton ( void ) {
 }
 
 void driveControl() {
+  if(controller_.ButtonX.pressing() /*&& not passing the lower limit*/) {
+      //Combination of drive motors to result in the lowering of the mogo lift
+  } else if(controller_.ButtonB.pressing() /*&& not passing the upper limit*/) {
+      //Combination of drive motors to result in the raising of the mogo lift
+  } else {
+  //Fix (if needed) the output of the motors during normal drive functions as to avoid activating the mogo
+
   //controller_.Axis2.value() returns a integer value of -127 to 127 based upon the position of the left joystick along Axis3,
   // while the maximum power of the motors is -100 to 100, this provides a "deadspace", or a margin in which the joystick
   // can be positioned within and still achieve maximum power.
@@ -57,6 +64,7 @@ void driveControl() {
   //Use Axis3 of the right joystick to controller the right side of the tank drive
   rightBack.spin(vex::directionType::fwd,  controller_.Axis3.value(), vex::velocityUnits::pct);
   rightFront.spin(vex::directionType::fwd, controller_.Axis3.value(), vex::velocityUnits::pct);
+  }
 }
 
 //This function's purpose is to display positional/angular information from the robot via the inbuilt IDE Terminal
