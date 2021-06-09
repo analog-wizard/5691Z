@@ -65,6 +65,17 @@ void autonMeasure() {
 
 }
 
+void lift_control() {
+    //To do: Add motion profiling as to prevent ware/damage to the dr4b due to sudden stops due to imposed/physical limits
+    //                                                                              Example Higher limit: 5000
+    if(controller_.ButtonR1.pressing() && (dr4b.rotation(vex::rotationUnits::deg) < 5000) {
+        dr4b.spin(vex::directionType::fwd, 100, vex::velocityUnits::pct);
+        //                                                                                  Example Lower limit: 0
+    } else if (controller_.ButtonR2.pressing() && (dr4b.rotation(vex::rotationUnits::deg) > 0)) {
+        dr4b.spin(vex::directionType::fwd, 100, vex::velocityUnits::pct);
+    }
+}
+
 void vibrate_time(vex::timer *timer__) {
   //The provided timer object will return time in milliseconds (chosen over seconds due to precision) counting up from 0
   // The maximum time, within a 1:45 minute match is 105 seconds, after this time has been passed, this function will do nothing.
