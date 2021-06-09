@@ -9,8 +9,12 @@ vex::motor leftFront = vex::motor(vex::PORT16, vex::gearSetting::ratio18_1, fals
 vex::motor leftBack = vex::motor(vex::PORT17, vex::gearSetting::ratio18_1, false);
 vex::motor rightFront = vex::motor(vex::PORT2, vex::gearSetting::ratio18_1, true);
 vex::motor rightBack = vex::motor(vex::PORT5, vex::gearSetting::ratio18_1, true);
-//The only agreed upon aspect (currently) is a Double Reverse 4 Bar (DR4B)
+vex::motor intake = vex::motor(vex::PORT7, vex::gearSetting::ratio18_1, true);
+vex::motor ring_release = vex::motor(vex::PORT8, vex::gearSetting::ratio18_1, true);
 vex::motor dr4b = vex::motor(vex::PORT6, vex::gearSetting::ratio36_1, false);
+
+vex::motor mogo_rotator = vex::motor(vex::PORT9, vex::gearSetting::ratio18_1, true);
+//Subject to debate, as other methods achieve similar results
 
 //An 8 long array used to store port numbers for installation checks
 // (To see if the motor is in the port specified)
