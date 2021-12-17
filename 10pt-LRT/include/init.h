@@ -1,25 +1,53 @@
 #ifndef INIT_H
 #define INIT_H
 
+#include <iostream>
+#include <array>
+
 vex::brain brain_;
-vex::competition competition_;
 vex::controller controller_;
 
-vex::motor leftFront = vex::motor(vex::PORT16, vex::gearSetting::ratio18_1, false);
-vex::motor leftBack = vex::motor(vex::PORT17, vex::gearSetting::ratio18_1, false);
-vex::motor rightFront = vex::motor(vex::PORT2, vex::gearSetting::ratio18_1, true);
-vex::motor rightBack = vex::motor(vex::PORT5, vex::gearSetting::ratio18_1, true);
-//The only agreed upon aspect (currently) is a Double Reverse 4 Bar (DR4B)
-vex::motor dr4b = vex::motor(vex::PORT6, vex::gearSetting::ratio36_1, false);
+vex::motor leftFront =    vex::motor(vex::PORT16, vex::gearSetting::ratio18_1, true);
+vex::motor leftMiddle =   vex::motor(vex::PORT4,  vex::gearSetting::ratio18_1, false);
+vex::motor leftBack =     vex::motor(vex::PORT8,  vex::gearSetting::ratio18_1, false); //3 
 
-//An 8 long array used to store port numbers for installation checks
-// (To see if the motor is in the port specified)
-int8_t port_array[8] = {16, 17, 2, 5, 9, 14, 15, 10};
+vex::motor rightFront =   vex::motor(vex::PORT13, vex::gearSetting::ratio18_1, true);
+vex::motor rightMiddle =  vex::motor(vex::PORT7,  vex::gearSetting::ratio18_1, false);
+vex::motor rightBack =    vex::motor(vex::PORT5,  vex::gearSetting::ratio18_1, false);
 
-//vex::bumper front_limit = vex::bumper(brain_.ThreeWirePort.H);
-vex::inertial imu = vex::inertial(vex::PORT18);
+vex::motor lift =         vex::motor(vex::PORT2, vex::gearSetting::ratio18_1, true);
+vex::motor mogo =         vex::motor(vex::PORT6, vex::gearSetting::ratio36_1, false);
 
-vex::encoder y_left_encoder = vex::encoder(brain_.ThreeWirePort.A);
-vex::encoder y_right_encoder = vex::encoder(brain_.ThreeWirePort.C);
+vex::inertial imu =       vex::inertial(vex::PORT1);
 
+vex::digital_out claw =   vex::digital_out(brain_.ThreeWirePort.A);
+vex::digital_out hook =   vex::digital_out(brain_.ThreeWirePort.B);
+
+vex::encoder x_encoder =  vex::encoder(brain_.ThreeWirePort.C);
+vex::encoder xnd_encoder= vex::encoder(brain_.ThreeWirePort.E);
+
+std::array<uint8_t,21> device_array;
+std::array<uint8_t,9> port_discov;
+std::array<uint8_t,9> port_array = {1, 2, 4, 5, 6, 7, 13, 16, 18};
+
+vex::devices device_proxy = vex::devices();
+bool device_check(const uint8_t motor_num) {
+  //std::cout << device_proxy.type(4) << "\n";
+  //std::cout << device_proxy.numberOf((V5_DeviceType)2) << "\n";
+
+  for(uint8_t i; i<21; i++) {
+    uint8_t x = 0;
+    if((int)vexDeviceGetByIndex(i) != 0) {
+      port_discov[x] = (int)vexDeviceGetByIndex(i);
+      x++;
+    } else;
+  }
+
+  bool check_pass = false;
+  //switch(device_proxy.numberOf((V5_DeviceType)2)) { //motor
+  //switch(device_proxy.numberOf((V5_DeviceType)6)) { //imu
+  return check_pass;
+}
+
+vex::competition competition_;
 #endif
