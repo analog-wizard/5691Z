@@ -196,8 +196,6 @@ void field::display() {
   std::cout << pos.x_pos << ": " << pos.y_pos << ": " << pos.z_pos << ": " << pos.yaw << "\n";
 }
 
-//47.9 cm diameter between both sides of drive wheels
-//32.4 cm diameter between tracking wheels
 void field::rotate(uint8_t power, double rotation, double margin) { //Make rotate direction / shortest rotational distance
   std::cout << this->pos.yaw << "\n";
   double delta_rotation = (rotation - this->pos.yaw);
@@ -219,64 +217,8 @@ void field::rotate(uint8_t power, double rotation, double margin) { //Make rotat
 };
 
 void field::direct(uint8_t power, field::units units, int32_t x_pos, int32_t y_pos, double error_margin, vex::directionType direction) { //Add direction
-  double d_x_pos = (pos.x_pos-x_pos);
-  double d_y_pos = (pos.y_pos-y_pos);
-
-  long double radian = atan2(y_pos, x_pos);
-  field::rotate(power, radian, error_margin);
-  long double distancew;
-
-  if(direction == vex::directionType::fwd)
-    distancew = -(int)sqrt(pow((d_x_pos),2.00) + pow((d_y_pos),2.00));
-  else if(direction == vex::directionType::rev)
-    distancew = (int)sqrt(pow((d_x_pos),2.00) + pow((d_y_pos),2.00));
-  else;
-  long double left_x_d = distancew - this->robot_p->drive.obj->pos_devices.x_enc->position(vex::rotationUnits::deg);
-  long double right_xnd_d = distancew - this->robot_p->drive.obj->pos_devices.x_enc_nd->position(vex::rotationUnits::deg);
-
-  double side_left_prof;
-  double side_right_prof;
-  while(fabs(left_x_d) > error_margin || fabs(right_xnd_d) > error_margin) {
-    left_x_d = distancew - this->robot_p->drive.obj->pos_devices.x_enc->position(vex::rotationUnits::deg);
-    right_xnd_d = distancew + this->robot_p->drive.obj->pos_devices.x_enc_nd->position(vex::rotationUnits::deg);
-
-    if(left_x_d > 0) {
-      side_left_prof = ((power)/(1+(0.166666 * pow(eular, 0.00352 * (-left_x_d + 1300)))));}
-    else {
-      side_left_prof = -((power)/(1+(0.166666 * pow(eular, 0.00352  * (left_x_d + 1300)))));}
-
-    if(right_xnd_d > 0) {
-      side_right_prof = ((power)/(1+(0.166666 * pow(eular, 0.00352  * (-right_xnd_d + 1300)))));}
-    else {
-      side_right_prof = -((power)/(1+(0.166666 * pow(eular, 0.00352  * (right_xnd_d + 1300)))));}
-
-    std::cout << side_left_prof << ":" << side_right_prof << ":" << left_x_d << ":" << right_xnd_d << "\n";
-    
-    leftFront.  spin(vex::directionType::fwd, side_left_prof, vex::percentUnits::pct);
-    leftMiddle. spin(vex::directionType::fwd, side_left_prof, vex::percentUnits::pct);
-    leftBack.   spin(vex::directionType::fwd, -side_left_prof, vex::percentUnits::pct);
-    rightFront. spin(vex::directionType::fwd, -side_right_prof, vex::percentUnits::pct);
-    rightMiddle.spin(vex::directionType::fwd, -side_right_prof, vex::percentUnits::pct);
-    rightBack.  spin(vex::directionType::fwd, side_right_prof, vex::percentUnits::pct);
-
-    vex::task::sleep(10);
-  }
-
-  leftFront.stop();
-  leftMiddle.stop();
-  leftBack.stop();
-
-  rightFront.stop();
-  leftMiddle.stop();
-  rightBack.stop();
-
-  //directional conditions
-  pos.x_pos = pos.x_pos + (cos(radian)*(distancew));
-  pos.y_pos = pos.y_pos + (sin(radian)*(distancew));
-
-  this->robot_p->drive.obj->pos_devices.x_enc_nd->resetRotation();
-  this->robot_p->drive.obj->pos_devices.x_enc->resetRotation();
-  return;
+    double distance = ;
+    while ()
 }
 
 #endif
