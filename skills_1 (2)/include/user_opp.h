@@ -1,7 +1,10 @@
 #ifndef USER_OPP_H
 #define USER_OPP_H
 
+#include "DAACS/Slew.h"
 #include "init.h"
+#include <iostream>
+
 bool grasp = false;
 bool under_hook = false;
 bool under_hook_2 = false;
@@ -31,14 +34,15 @@ void lift_grasp() {
 
 void driveCode() {
   while(true) {
-    leftFront. spin(vex::directionType::fwd, -controller_.Axis3.position(), vex::velocityUnits::pct);
-    leftMiddle.spin(vex::directionType::fwd, -controller_.Axis3.position(), vex::velocityUnits::pct);
+    leftFront. spin(vex::directionType::fwd, controller_.Axis3.position(), vex::velocityUnits::pct);
+    leftMiddle.spin(vex::directionType::fwd, controller_.Axis3.position(), vex::velocityUnits::pct);
     leftBack. spin(vex::directionType::fwd, controller_.Axis3.position(), vex::velocityUnits::pct);
 
     rightFront. spin(vex::directionType::fwd, controller_.Axis2.position(), vex::velocityUnits::pct);
     rightMiddle.spin(vex::directionType::fwd, controller_.Axis2.position(), vex::velocityUnits::pct);
-    rightBack. spin(vex::directionType::fwd, -controller_.Axis2.position(), vex::velocityUnits::pct);
-    vex::task::sleep(10);
+    rightBack. spin(vex::directionType::fwd, controller_.Axis2.position(), vex::velocityUnits::pct);
+    //std::cout << leftFront.velocity(vex::percentUnits::pct) << ":" << leftMiddle.velocity(vex::percentUnits::pct) << ":" << leftBack.velocity(vex::percentUnits::pct) << ":" << rightFront.velocity(vex::percentUnits::pct) << ":" << rightMiddle.velocity(vex::percentUnits::pct) << ":" << rightBack.velocity(vex::percentUnits::pct) << "\n";
+    vex::this_thread::sleep_for(10);
   }
 }
 

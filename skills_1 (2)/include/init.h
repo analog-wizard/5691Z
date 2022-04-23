@@ -1,16 +1,18 @@
 #ifndef INIT_H
 #define INIT_H
 
+#include <array>
+
 vex::brain brain_;
 vex::controller controller_;
 
-vex::motor leftFront =    vex::motor(vex::PORT16, vex::gearSetting::ratio6_1, true);
-vex::motor leftMiddle =   vex::motor(vex::PORT4,  vex::gearSetting::ratio6_1, false);
-vex::motor leftBack =     vex::motor(vex::PORT8,  vex::gearSetting::ratio6_1, false); //3 
+vex::motor leftFront =    vex::motor(vex::PORT8, vex::gearSetting::ratio6_1, false);
+vex::motor leftMiddle =   vex::motor(vex::PORT4,  vex::gearSetting::ratio6_1, true);
+vex::motor leftBack =     vex::motor(vex::PORT16,  vex::gearSetting::ratio6_1, false); //3 
 
-vex::motor rightFront =   vex::motor(vex::PORT13, vex::gearSetting::ratio6_1, true);
+vex::motor rightFront =   vex::motor(vex::PORT5, vex::gearSetting::ratio6_1, true);
 vex::motor rightMiddle =  vex::motor(vex::PORT7,  vex::gearSetting::ratio6_1, false);
-vex::motor rightBack =    vex::motor(vex::PORT5,  vex::gearSetting::ratio6_1, false);
+vex::motor rightBack =    vex::motor(vex::PORT13,  vex::gearSetting::ratio6_1, true);
 
 vex::motor_group left_drive = vex::motor_group(leftFront, leftMiddle, leftBack);
 vex::motor_group right_drive = vex::motor_group(rightFront, rightMiddle, rightBack);
@@ -22,7 +24,8 @@ vex::inertial imu =       vex::inertial(vex::PORT1);
 
 vex::digital_out claw =   vex::digital_out(brain_.ThreeWirePort.A);
 vex::digital_out hook =   vex::digital_out(brain_.ThreeWirePort.B);
-vex::digital_out hook_2 =   vex::digital_out(brain_.ThreeWirePort.C);
+vex::digital_out hook_2 = vex::digital_out(brain_.ThreeWirePort.C);
+vex::encoder x_encoder =  vex::encoder(brain_.ThreeWirePort.G);
 
 std::array<uint8_t,21> device_array;
 std::array<uint8_t,9> port_discov;

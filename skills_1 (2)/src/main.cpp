@@ -10,6 +10,7 @@
 #include "init.h"
 #include "auton.h"
 #include "user_opp.h"
+#include <iostream>
 
 using namespace vex;
 
@@ -39,6 +40,7 @@ void usercontrol ( void ) {
   rightMiddle.stop(vex::brakeType::coast);
   rightBack.stop(vex::brakeType::coast);
   while(true) {
+    //std::cout << brain_.Screen.xPosition() << brain_.Screen.yPosition() << "\n";
     vex::thread tdriveCode(driveCode);
     vex::thread tlift(lift_grasp);
     pnue_();

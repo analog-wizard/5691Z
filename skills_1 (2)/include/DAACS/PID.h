@@ -33,12 +33,11 @@ using namespace std;
 class PID
 {
     public:
-        PID( double dt, double max, double min, double Kp, double Kd, double Ki );
+        PID( double max, double min, double Kp, double Kd, double Ki );
         ~PID();
-        double calculate( double setpoint, double pv );
+        double calculate( double dt,double setpoint, double pv );
 
     private:
-        double _dt;
         double _max;
         double _min;
         double _Kp;
@@ -52,8 +51,7 @@ class PID
 /**
  * Implementation
  */
-PID::PID( double dt, double max, double min, double Kp, double Kd, double Ki ) :
-    _dt(dt),
+PID::PID(double max, double min, double Kp, double Kd, double Ki ) :
     _max(max),
     _min(min),
     _Kp(Kp),
@@ -63,7 +61,7 @@ PID::PID( double dt, double max, double min, double Kp, double Kd, double Ki ) :
     _integral(0)
 {}
 
-double PID::calculate( double setpoint, double pv )
+double PID::calculate( double _dt, double setpoint, double pv )
 {
     
     // Calculate error
