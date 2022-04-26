@@ -38,11 +38,13 @@ class event_loop {
         auto status = future.wait_for(0ms);
         double prev_left_accel;
         double prev_right_accel;
-        double left_accel = (rightBack.velocity()+rightMiddle.velocity()+rightFront.velocity())/3;
-        double right_accel = (leftBack.velocity()+leftMiddle.velocity()+leftFront.velocity())/3;
+        double prev_right_velocity = 0;
+        double prev_left_velocity = 0;
         while(status != std::future_status::ready) {
             status = future.wait_for(0ms);
             if(imu->installed()) {
+                prev_left_accel = (((leftBack.velocity()+leftMiddle.velocity()+leftFront.velocity())/3)-prev_left_velocity)/delta_time:
+                prev_right_accel = (((rightBack.velocity()+rightMiddle.velocity()+rightFront.velocity())/3)-prev_right_velocity)/delta_time;
                 imu->acceleration(vex::axisType::xaxis);
                 imu->acceleration(vex::axisType::yaxis);
             }
