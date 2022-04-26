@@ -2,23 +2,57 @@
 #define DAACS_MAIN_H
 
 #include "vision.h"
+
 #include <vector>
-#include "PID.h"
+#include <atomic>
+#include <chrono>
 
 class event_loop {
+  private:
+    vex::inertial* imu;
+    vex::vision* vision;
   public:
-    event_loop() {};
+    event_loop(vex::inertial* imu_) {
+        imu = imu_
+    };
 
     vex::timer auton_timer = vex::timer();
-    vex::thread current_task = vex::thread();
+    std::promise<bool> thread_complete;
+    vex::thread current_task;
+
+    typedef struct collision {
+      double yaw;
+      double magnitude;
+    } _collision;
+    _collision collision;
+
+    std::atomic<std::vector<void*>> event_bus;
+    event_bus.reserve(2);
 
     void main_loop(vex::timer *timer__, std::vector<void*> funct) {
+      using namespace std::chrono_literals;
       int pointer_ = 0;
       while(timer__->time() < 15000) {
-        vex::thread x((int (*)())(funct[pointer_]));
-        x.join();
+        vex::thread current_task((void (*)())(funct[pointer_]));
+        auto future = this->thread_complete.get_future();
+        auto status = future.wait_for(0ms);
+        double prev_left_accel;
+        double prev_right_accel;
+        double left_accel = (rightBack.velocity()+rightMiddle.velocity()+rightFront.velocity())/3;
+        double right_accel = (leftBack.velocity()+leftMiddle.velocity()+leftFront.velocity())/3;
+        while(status != std::future_status::ready) {
+            status = future.wait_for(0ms);
+            if(imu->installed()) {
+                imu->acceleration(vex::axisType::xaxis);
+                imu->acceleration(vex::axisType::yaxis);
+            }
+            if(vision->installed()) {
+                
+            }
+        }
         pointer_++;
       }
+      return;
     };
     //~event_loop();
 };
@@ -57,7 +91,7 @@ class field : public event_loop {
 
     double x_pos;
     double y_pos;
-    std::vector<game_obj> obj_vect;
+    std::atomic<std::vector<game_obj>> obj_vect;
 
     field(double x_pos, double y_pos, angles angle_, std::vector<game_obj> obj_vect_) : event_loop() {
       x_pos = x_pos;
